@@ -1,6 +1,6 @@
 from base_module import BaseModule
 
-class BasicModule():
+class BasicModule(BaseModule):
 
   def process_message(self, m):
     if m.get('text') is not None and m['text'].find('fuck') >= 0:

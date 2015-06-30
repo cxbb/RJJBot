@@ -3,6 +3,7 @@ import httplib
 import urllib
 import json
 from modules.basic_module import BasicModule
+from modules.dice import DiceModule
 
 class RJJBot:
 
@@ -78,12 +79,12 @@ class RJJBot:
       res = self.send_request('getUpdates', { 'offset': update_id + 1 })
       self.process_messages(res)
       import time
-      time.sleep(2)
+      time.sleep(1)
     print "RJJ Close"
 
 
 if __name__ == '__main__':
     rjj = RJJBot()
-    rjj.modules = [BasicModule()]
+    rjj.modules = [BasicModule(), DiceModule()]
     rjj.start()
 
