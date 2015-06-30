@@ -2,6 +2,7 @@
 import httplib
 import urllib
 import json
+from modules.basic_module import BasicModule
 
 class RJJBot:
 
@@ -10,6 +11,9 @@ class RJJBot:
     key = f.read().strip()
   BOT = '/bot%s/' % (key)
   OFFSET_FILE = 'offset.txt'
+
+  def __init__(self):
+    self.modules = []
 
   def send_request(self, method, data={}):
     c = httplib.HTTPSConnection(self.SERVER)
@@ -58,28 +62,28 @@ class RJJBot:
     if m is not None and m.get('message_id') is not None:
       m_id = m.get('mesesage_id')
       chat_id = m['chat']['id']
-      if m.get('text') is not None and m['text'].find('fuck') >= 0:
-        self.send_message('Please stop fucking.', chat_id)
-      if m.get('text') is not None and m['text'].endswith('='):
-        exp = m['text'][:-1]
-        try:
-          answer = eval(exp,{"__builtins__":None})
-          self.send_message('%s %s' % (m['text'], answer), chat_id)
-        except Exception, e:
-          self.send_message('Cannot evaluate: %s' % str(e), chat_id)
 
+      # Delegate messages to modules
+      for module in self.modules:
+        reply = module.process_message(m)
+        if reply != None:
+          self.send_message(reply, chat_id)
+          return
 
 
   def start(self):
+    print "RJJ Standby"
     while True:
       update_id = self.get_offset()
-      res = self.send_request('getUpdates', {'offset': update_id+1})
+      res = self.send_request('getUpdates', { 'offset': update_id + 1 })
       self.process_messages(res)
       import time
       time.sleep(2)
+    print "RJJ Close"
 
 
 if __name__ == '__main__':
     rjj = RJJBot()
+    rjj.modules = [BasicModule()]
     rjj.start()
 
