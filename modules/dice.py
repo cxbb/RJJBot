@@ -3,11 +3,11 @@ import random
 import re
 from parse import parse
 
-'''
-  /roll              - roll a die with 6 faces
-  /roll {int}        - roll a die with the specified number of faces
-  /roll {int} {int}  - roll many dice
-'''
+###
+#  /roll              - roll a die with 6 faces
+#  /roll {int}        - roll a die with the specified number of faces
+#  /roll {int} {int}  - roll many dice
+###
 class DiceModule(BaseModule):
 
   def process_message(self, m):
