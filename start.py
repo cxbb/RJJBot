@@ -4,6 +4,7 @@ import urllib
 import json
 from modules.basic_module import BasicModule
 from modules.dice import DiceModule
+from modules.whopays import WhoPaysModule
 
 class RJJBot:
 
@@ -85,6 +86,6 @@ class RJJBot:
 
 if __name__ == '__main__':
     rjj = RJJBot()
-    rjj.modules = [BasicModule(), DiceModule()]
+    rjj.modules = [BasicModule(), DiceModule(), WhoPaysModule()]
     rjj.start()
 
