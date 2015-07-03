@@ -21,18 +21,21 @@ class RJJBot:
     c = httplib.HTTPSConnection(self.SERVER)
     params = urllib.urlencode(data)
     headers = {"Content-type": "application/x-www-form-urlencoded"}
-    c.request('POST', self.BOT + method, params, headers)
-    r = c.getresponse()
-    if r.status != 200:
-      raise Exception('HTTP response %s: %s' % (r.status, r.reason))
     try:
-      res = r.read()
-      o = json.loads(res)
-      if o['ok'] is not True:
-        raise Exception('Method returned failure: %s' % (o.get('result')))
-      return o['result']
+      c.request('POST', self.BOT + method, params, headers)
+      r = c.getresponse()
+      if r.status != 200:
+        raise Exception('HTTP response %s: %s' % (r.status, r.reason))
+      try:
+        res = r.read()
+        o = json.loads(res)
+        if o['ok'] is not True:
+          raise Exception('Method returned failure: %s' % (o.get('result')))
+        return o['result']
+      except Exception, e:
+        raise Exception('Error parsing response JSON: %s' % (res))
     except Exception, e:
-      raise Exception('Error parsing response JSON: %s' % (res))
+      print "Exception! %s" % (str(e))
 
 
   def update_offset(self, offset):
