@@ -1,7 +1,7 @@
 # RJJBot
 An experimental Telegram bot (just for fun)
 
-Create api-key.txt in the current folder and put your bot's API key inside. Copy offset.txt from the sample_config folder to the current folder.
+Create api-key.txt in the current folder and put your bot's API key inside. Copy offset.txt and restaurants.txt from the sample_config folder to the current folder.
 
 Telegram Bot API: https://core.telegram.org/bots/api
 
