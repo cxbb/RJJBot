@@ -54,7 +54,7 @@ class RJJBot:
       self.process_message(message)
 
   def send_message(self, text, chat_id):
-    self.send_request('sendMessage', {'chat_id': chat_id, 'text': text})
+    self.send_request('sendMessage', {'chat_id': chat_id, 'text': text.encode('utf-8') })
 
 ###### helpers above #######
 
