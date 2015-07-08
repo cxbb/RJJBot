@@ -30,7 +30,7 @@ class WhoPaysModule(BaseModule):
       except Exception, e:
         return 'Enjoy. Error: %s' % (str(e))
 
-    if stripped.startswith('/eatadd'):
+    if stripped.startswith('/eatadd '):
       restaurant_name = ' '.join(stripped.split(' ')[1:]).strip()
       self.add_restaurant(restaurant_name)
       return u'Added restaurant name [%s]' % (restaurant_name)
@@ -56,6 +56,15 @@ class WhoPaysModule(BaseModule):
       except Exception, e:
         return 'Invalid number of restaurants.'
       return '\n'.join(['%s. %s' % (i+1, v) for i, v in enumerate(self.sampled)]) + '\nUse /eatvote [1-%s] to vote.' % (len(self.sampled))
+
+    if stripped.startswith('/eataddsample '):
+       try:
+         restaurant = ' '.join(stripped.split(' ')[1:]).strip()
+         if not self.add_sample ( restaurant ):
+           raise Exception(e)
+       except Exception, e:
+         return 'Invalid Restaurant %s.' % restaurant
+       return '\n'.join( ['%s. %s' % (i+1,v) for i, v in enumerate(self.sampled)]) + '\nUse /eatvote[1-%s] to vote.' % (len(self.sampled))
 
     if stripped.startswith('/eatvote'):
        try:
@@ -107,6 +116,15 @@ class WhoPaysModule(BaseModule):
     self.sampled = random.sample(self.restaurants, k)
     self.sampled += [ u'I don\'t like these restaurants\U0001F31A' ]
     self.votes = {}
+
+  def add_sample(self, name):
+    if name in self.sampled:
+      return False
+    if name not in self.restaurants:
+      return False
+    else:
+      self.sampled += [ name ]
+      return True
 
   def vote(self, user_id, username, index):
     if index < 0 or index >= len(self.sampled):
