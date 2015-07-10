@@ -7,6 +7,7 @@ from modules.dice import DiceModule
 from modules.whopays import WhoPaysModule
 from modules.finance import FinanceModule
 from modules.wordcheck import WordCheckModule
+from modules.kvdb import KVDBModule
 
 class RJJBot:
 
@@ -91,6 +92,6 @@ class RJJBot:
 
 if __name__ == '__main__':
     rjj = RJJBot()
-    rjj.modules = [BasicModule(), DiceModule(), WhoPaysModule(), FinanceModule(), WordCheckModule()]
+    rjj.modules = [BasicModule(), DiceModule(), WhoPaysModule(), FinanceModule(), WordCheckModule(), KVDBModule()]
     rjj.start()
 
