@@ -8,6 +8,7 @@ from modules.whopays import WhoPaysModule
 from modules.finance import FinanceModule
 from modules.wordcheck import WordCheckModule
 from modules.kvdb import KVDBModule
+from modules.memo import MemoModule
 
 class RJJBot:
 
@@ -39,6 +40,7 @@ class RJJBot:
         raise Exception('Error parsing response JSON: %s' % (res))
     except Exception, e:
       print "Exception! %s" % (str(e))
+      raise
 
 
   def update_offset(self, offset):
@@ -57,7 +59,10 @@ class RJJBot:
       self.process_message(message)
 
   def send_message(self, text, chat_id):
-    self.send_request('sendMessage', {'chat_id': chat_id, 'text': text.encode('utf-8') })
+    if isinstance(text, basestring):
+      self.send_request('sendMessage', {'chat_id': chat_id, 'text': text.encode('utf-8'), 'disable_web_page_preview': True })
+    elif text.get('type') == 'sticker':
+      self.send_request('sendSticker', { 'chat_id': chat_id, 'sticker': text.get('content', '') })
 
 ###### helpers above #######
 
@@ -82,9 +87,12 @@ class RJJBot:
   def start(self):
     print "RJJ Standby"
     while True:
-      update_id = self.get_offset()
-      res = self.send_request('getUpdates', { 'offset': update_id + 1 })
-      self.process_messages(res)
+      try:
+        update_id = self.get_offset()
+        res = self.send_request('getUpdates', { 'offset': update_id + 1 })
+        self.process_messages(res)
+      except Exception, e:
+        print 'Exception caught'
       import time
       time.sleep(1)
     print "RJJ Close"
@@ -92,6 +100,6 @@ class RJJBot:
 
 if __name__ == '__main__':
     rjj = RJJBot()
-    rjj.modules = [BasicModule(), DiceModule(), WhoPaysModule(), FinanceModule(), WordCheckModule(), KVDBModule()]
+    rjj.modules = [BasicModule(), DiceModule(), WhoPaysModule(), FinanceModule(), WordCheckModule(), KVDBModule(), MemoModule()]
     rjj.start()
 
