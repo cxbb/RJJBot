@@ -3,8 +3,12 @@ from base_module import BaseModule
 class BasicModule(BaseModule):
 
   def process_message(self, m):
+    if m['from']['first_name'] == 'Ho Wa':
+      return ''
     if m.get('text') is not None and m['text'].find('fuck') >= 0:
       return 'Please stop fucking.'
+    if m.get('text') is not None and m['text'].strip() == '/aws':
+      return 'https://937310467346.signin.aws.amazon.com/console'
     if m.get('text') is not None and m['text'].endswith('='):
       exp = m['text'][:-1]
       try:

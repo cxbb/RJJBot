@@ -46,7 +46,7 @@ class KVDBModule(BaseModule):
 
     if stripped == '/list':
        var_list = self.list(chat_id)
-       s = 'All variables: ' + ', '.join(var_list)
+       s = 'All variables: ' + ', '.join(sorted(var_list))
        return s
 
   def load_db(self):
