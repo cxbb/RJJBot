@@ -87,7 +87,7 @@ class WhoPaysModule(BaseModule):
       return ', '.join(self.restaurants)
 
     if stripped.startswith('/eatsample'):
-      count = 3
+      count = 5
       try:
         if stripped != '/eatsample':
           remains = stripped.split(' ', 1)[1]

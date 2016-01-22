@@ -2,6 +2,7 @@
 import httplib
 import urllib
 import json
+import sys
 from modules.basic_module import BasicModule
 from modules.dice import DiceModule
 from modules.whopays import WhoPaysModule
@@ -20,6 +21,7 @@ class RJJBot:
 
   def __init__(self):
     self.modules = []
+    self.print_reply = False
 
   def send_request(self, method, data={}):
     c = httplib.HTTPSConnection(self.SERVER)
@@ -46,8 +48,8 @@ class RJJBot:
   def update_offset(self, offset):
     x = self.get_offset()
     if offset > x:
-     with open(self.OFFSET_FILE, 'w') as f:
-       f.write(str(offset))
+      with open(self.OFFSET_FILE, 'w') as f:
+        f.write(str(offset))
 
   def get_offset(self):
     with open(self.OFFSET_FILE, 'r') as f:
@@ -55,6 +57,8 @@ class RJJBot:
       return int(x)
 
   def process_messages(self, messages):
+    if messages is None:
+      return
     for message in messages:
       self.process_message(message)
 
@@ -67,11 +71,11 @@ class RJJBot:
 ###### helpers above #######
 
 
-  def process_message(self, m):
-    update_id = int(m.get('update_id'))
+  def process_message(self, msg):
+    update_id = int(msg.get('update_id'))
     self.update_offset(update_id)
     print 'Processed %s' % (update_id)
-    m = m.get('message')
+    m = msg.get('message')
     if m is not None and m.get('message_id') is not None:
       m_id = m.get('mesesage_id')
       chat_id = m['chat']['id']
@@ -80,7 +84,10 @@ class RJJBot:
       for module in self.modules:
         reply = module.process_message(m)
         if reply != None:
-          self.send_message(reply, chat_id)
+          if (self.print_reply):
+            print reply
+          else:
+            self.send_message(reply, chat_id)
           return
 
 
@@ -97,9 +104,37 @@ class RJJBot:
       time.sleep(1)
     print "RJJ Close"
 
+  def start_local(self):
+    self.print_reply = True
+    print ("> "),
+    while True:
+      line = sys.stdin.readline()
+      msg = {
+        'update_id': 1,
+        'message': {
+          'text': line,
+          'message_id': 1,
+          'chat': { 'id': 9999 },
+          'from': {
+            'id': 'local',
+            'first_name': 'Local'
+          }
+        }
+      }
+      if len(line) == 0:
+        break
+      self.process_message(msg)
+      print ("> "),
+    print "RJJ Close"
+
+
 
 if __name__ == '__main__':
     rjj = RJJBot()
     rjj.modules = [BasicModule(), DiceModule(), WhoPaysModule(), FinanceModule(), WordCheckModule(), KVDBModule(), MemoModule()]
-    rjj.start()
+    if (len(sys.argv) > 1 and sys.argv[1] == "local"):
+      rjj.start_local()
+    else:
+      rjj.start()
+>>>>>>> 1f5e652d79c2457a2ad95c62a71315d582abc847
 
