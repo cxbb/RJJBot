@@ -12,12 +12,16 @@ class AqiModule(BaseModule):
   def __init__(self):
     self.command_specs = [
       { 'spec': ['aqi'], 'func': self.get_aqi_here, 'desc': '/aqi - Show AQI in HK' },
-      { 'spec': ['aqi', 'list', ':'], 'desc': '/aqi list - list all stations id'},
-      { 'spec': ['aqi', ':int'], 'desc': '/aqi <id> - Get AQI for station with <ID>', 'func': self.get_aqi_id},
-      { 'spec': ['aqi', ':string'], 'desc': '/aqi <string> - Get AQI for station with <name>', 'func': self.get_aqi_name},
+      { 'spec': ['aqi', 'help'], 'desc': '/aqi help - Show this help', 'func': self.help},
+      { 'spec': ['aqi', 'list', ':'], 'desc': '/aqi list - list all stations id', 'func': self.list_all_stations},
+      { 'spec': ['aqi', ':int'], 'desc': '/aqi &lt;id&gt; - Get AQI for station with &lt;ID&gt;', 'func': self.get_aqi_id},
+      { 'spec': ['aqi', ':string'], 'desc': '/aqi &lt;name&gt; - Get AQI for station with &lt;name&gt;', 'func': self.get_aqi_name}
     ]
     with open('aqi-token.txt', 'r') as f:
       self.token = f.read().strip()
+  
+  def list_all_stations(self, cmd): 
+    return u"ID 地點\n" + u"\n".join([ "<"+str(station['id'])+"> "+station['station'].decode('utf-8') for station in AqiModule.stations ])
 
   def get_aqi_here(self, cmd):
     return self.get_aqi(2559)
