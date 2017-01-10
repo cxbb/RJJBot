@@ -5,11 +5,13 @@ import json
 import sys
 from modules.basic_module import BasicModule
 from modules.dice import DiceModule
-from modules.whopays import WhoPaysModule
+from modules.lunch import LunchModule 
 from modules.finance import FinanceModule
 from modules.wordcheck import WordCheckModule
 from modules.kvdb import KVDBModule
 from modules.memo import MemoModule
+from modules.event import EventModule
+from commands import Command, CommandParseException
 
 class RJJBot:
 
@@ -25,10 +27,9 @@ class RJJBot:
 
   def send_request(self, method, data={}):
     c = httplib.HTTPSConnection(self.SERVER)
-    params = urllib.urlencode(data)
-    headers = {"Content-type": "application/x-www-form-urlencoded"}
+    headers = {"Content-type": "application/json"}
     try:
-      c.request('POST', self.BOT + method, params, headers)
+      c.request('POST', self.BOT + method, json.dumps(data), headers)
       r = c.getresponse()
       if r.status != 200:
         raise Exception('HTTP response %s: %s' % (r.status, r.reason))
@@ -41,8 +42,7 @@ class RJJBot:
       except Exception, e:
         raise Exception('Error parsing response JSON: %s' % (res))
     except Exception, e:
-      print "Exception! %s" % (str(e))
-      raise
+      print "ERROR SENDING REQUEST: %s" % (str(e))
 
 
   def update_offset(self, offset):
@@ -64,7 +64,9 @@ class RJJBot:
 
   def send_message(self, text, chat_id):
     if isinstance(text, basestring):
-      self.send_request('sendMessage', {'chat_id': chat_id, 'text': text.encode('utf-8'), 'disable_web_page_preview': True })
+      self.send_request('sendMessage', {'chat_id': chat_id, 'text': text.encode('utf-8'), 'disable_web_page_preview': True})
+    elif text.get('type') == 'html':
+      self.send_request('sendMessage', {'chat_id': chat_id, 'text': text.get('content').encode('utf-8'), 'parse_mode': 'HTML', 'disable_web_page_preview': True})
     elif text.get('type') == 'sticker':
       self.send_request('sendSticker', { 'chat_id': chat_id, 'sticker': text.get('content', '') })
 
@@ -74,17 +76,25 @@ class RJJBot:
   def process_message(self, msg):
     update_id = int(msg.get('update_id'))
     self.update_offset(update_id)
-    print 'Processed %s' % (update_id)
+    print 'Now process %s' % (update_id)
     m = msg.get('message')
     if m is not None and m.get('message_id') is not None:
       m_id = m.get('mesesage_id')
       chat_id = m['chat']['id']
-
+      command = None
+      if 'text' in m:
+        try:
+          command = Command(m['text'])
+        except CommandParseException, e:
+          command = None
       # Delegate messages to modules
       for module in self.modules:
-        reply = module.process_message(m)
+        try:
+          reply = module.process_message(m, command)
+        except TypeError, e:
+          reply = module.process_message(m)
         if reply != None:
-          if (self.print_reply):
+          if self.print_reply:
             print reply
           else:
             self.send_message(reply, chat_id)
@@ -95,11 +105,18 @@ class RJJBot:
     print "RJJ Standby"
     while True:
       try:
+        #if chat_id is not None:
+        #    self.send_message(message, chat_id)
         update_id = self.get_offset()
         res = self.send_request('getUpdates', { 'offset': update_id + 1 })
         self.process_messages(res)
       except Exception, e:
-        print 'Exception caught'
+        raise
+        print 'Exception caught: ', type(e)
+      for module in self.modules:
+        ret = module.tick()
+        if ret is not None:
+          self.send_message(ret, '-8311114')
       import time
       time.sleep(1)
     print "RJJ Close"
@@ -131,7 +148,7 @@ class RJJBot:
 
 if __name__ == '__main__':
     rjj = RJJBot()
-    rjj.modules = [BasicModule(), DiceModule(), WhoPaysModule(), FinanceModule(), WordCheckModule(), KVDBModule(), MemoModule()]
+    rjj.modules = [BasicModule(), MemoModule(), DiceModule(), LunchModule(), FinanceModule(), WordCheckModule(), KVDBModule(), EventModule()]
     if (len(sys.argv) > 1 and sys.argv[1] == "local"):
       rjj.start_local()
     else:
