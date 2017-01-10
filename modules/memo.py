@@ -9,67 +9,84 @@ class MemoModule(BaseModule):
 
   def __init__(self):
     self.db = {}
-
-  def process_message(self, m):
-    if m.get('text') is None:
-      return None
-    stripped = m['text'].strip()
-    sender_id = m['from']['id']
-    chat_id = unicode(m['chat']['id'])
-    sender = m['from']['first_name']
-
-    if stripped.startswith('/addmemo '):
-      stripped_again = ' '.join(stripped.split(' ')[1:]).strip()
-      if len(stripped_again) == 0:
-        return u'Add what?????'
-      self.put(chat_id, stripped_again)
-      return u'Added memo: %s' % (stripped_again)
-
-    if stripped.startswith('/delmemo '):
-      stripped_again = ' '.join(stripped.split(' ')[1:]).strip()
-      try:
-        index = int(stripped_again)
-        ret = self.unset(chat_id, index-1)
-        return 'Removed memo: %s' % (ret)
-      except:
-        return "Failed :("
-
-    if stripped == '/memo':
-      s = 'Memo:\n'
-      var_list = self.list(chat_id)
-      for i in xrange(0, len(var_list)):
-        s += '[%s] %s\n' % ((i+1), var_list[i])
-      return s
+    self.command_specs = [
+      { 'spec': [ 'memo' ], 'func': self.list, 'desc': '/memo - List all memoes' },
+      { 'spec': [ 'memo', 'add', ':', ':string' ], 'func': self.put, 'desc': '/memo add <i>MEMO</i> - Add a new memo' },
+      { 'spec': [ 'memo', 'del', ':', ':int' ], 'func': self.unset, 'desc': '/memo del <i>MEMO_INDEX</i> - Delete a memo' },
+      { 'spec': [ 'memo', 'edit', ':', ':int', ':string' ], 'func': self.edit, 'desc': '/memo edit <i>MEMO_INDEX MEMO</i> - Edit a memo' },
+      { 'spec': [ 'memo', 'insert', ':', ':int', ':string' ], 'func': self.insert, 'desc': '/memo insert <i>MEMO_INDEX MEMO</i> - Insert a memo at the specified index' },
+      { 'spec': [ 'memo', 'help', ':' ], 'func': self.help, 'desc': '/memo help - Show this help' },
+      { 'spec': [ 'memo', ':string' ], 'func': self.unknown }, 
+    ]
 
   def load_db(self):
     with open(MemoModule.DB_FILE, 'r') as f:
       input = f.read()
       self.db = json.loads(input)
 
-  def put(self, chat_id, value):
+  def put(self, cmd):
+    # memo add content
     self.load_db()
-    chat_db = self.db.get(chat_id) or []
-    chat_db.append(value)
-    self.db[chat_id] = chat_db
+    chat_db = self.db.get(self.chat_id) or []
+    chat_db.append(cmd[2])
+    self.db[self.chat_id] = chat_db
     with open(MemoModule.DB_FILE, 'w') as f:
       f.write(json.dumps(self.db, ensure_ascii=False).encode('utf-8'))
+    return u'Added memo: %s' % (cmd[2])
 
-  def unset(self, chat_id, index):
+  def edit(self, cmd):
+    # memo edit index content
+    index = cmd[2] - 1
+    value = cmd[3]
     self.load_db()
-    chat_db = self.db.get(chat_id) or []
+    chat_db = self.db.get(self.chat_id) or []
     if index < 0 or index >= len(chat_db):
-      raise Exception('index out of range')
+      raise Exception('Memo index out of range')
+    chat_db[index] = value
+    self.db[self.chat_id] = chat_db
+    with open(MemoModule.DB_FILE, 'w') as f:
+      f.write(json.dumps(self.db, ensure_ascii=False).encode('utf-8'))
+    return u'Edited memo: %s' % value
+
+  def insert(self, cmd):
+    # memo insert index content
+    index = cmd[2] - 1
+    value = cmd[3]
+    self.load_db()
+    chat_db = self.db.get(self.chat_id) or []
+    if index < 0 or index > len(chat_db):
+      raise Exception('Memo index out of range')
+    chat_db.insert(index, value)
+    self.db[self.chat_id] = chat_db
+    with open(MemoModule.DB_FILE, 'w') as f:
+      f.write(json.dumps(self.db, ensure_ascii=False).encode('utf-8'))
+    return u'Inserted memo: %s' % value
+
+  def unset(self, cmd):
+    # memo del index
+    index = cmd[2] - 1
+    self.load_db()
+    chat_db = self.db.get(self.chat_id) or []
+    if index < 0 or index >= len(chat_db):
+      raise Exception('Memo index out of range')
     removed = chat_db[index]
     chat_db = chat_db[:index] + chat_db[index+1:]
     if len(chat_db):
-      self.db[chat_id] = chat_db
-    elif chat_id in self.db:
-      del self.db[chat_id]
+      self.db[self.chat_id] = chat_db
+    elif self.chat_id in self.db:
+      del self.db[self.chat_id]
     with open(MemoModule.DB_FILE, 'w') as f:
       f.write(json.dumps(self.db, ensure_ascii=False).encode('utf-8'))
-    return removed
+    return u'Removed memo: %s' % removed
 
-  def list(self, chat_id):
+  def list(self, cmd):
+    # memo
     self.load_db()
-    chat_db = self.db.get(chat_id) or []
-    return chat_db
+    var_list = self.db.get(self.chat_id) or []
+    s = 'Memo:\n'
+    for i in xrange(0, len(var_list)):
+      s += '[%s] %s\n' % ((i+1), var_list[i])
+    return s
+
+  def unknown(self, cmd):
+    raise Exception('Unknown subcommand: %s\nType /memo help for the list of subcommands.' % (cmd[1].split()[0]))

@@ -10,38 +10,32 @@ from parse import parse
 ###
 class DiceModule(BaseModule):
 
-  def process_message(self, m):
-    text = m.get('text')
-    if text is None:
-      return None
-    sender = m['from']['first_name']
-    text = re.sub(' +', ' ', text).strip() # strip multiple spaces
-    ###### two arguments ######
-    try:
-      res = parse('/roll {:d} {:d}', text)
-    except:
-      res = None
-    if res:
-      faces = res.fixed[0]
-      times = res.fixed[1]
-      if faces >= 1 and times >= 1:
-        out = [ random.randint(1, faces) for i in xrange(0, times)]
-        return '%s rolled %s. The sum is %s.' % (sender, out, sum(out))
-      else:
-        return 'Positive numbers please.'
-    ###### one argument ######
-    try:
-      res = parse('/roll {:d}', text)
-    except:
-      res = None
-    if res:
-      faces = res.fixed[0]
-      if faces >= 1:
-        return '%s rolled %s.' % (sender, random.randint(1, faces))
-      else:
-        return 'A positive number please.'
-    ###### zero argument ######
-    if text == '/roll':
-      faces = 6
-      return '%s rolled %s.' % (sender, random.randint(1, faces))
-    return None
+  def __init__(self):
+    self.command_specs = [
+      { 'spec': [ 'roll', 'help' ], 'func': self.help, 'desc': '/roll help - Show this help' },
+      { 'spec': [ 'roll' ], 'func': self.roll, 'desc': '/roll - Roll a die with 6 faces (output is 1~6)' },
+      { 'spec': [ 'roll', ':int' ], 'func': self.roll, 'desc': '/roll <i>FACES</i> - Roll a die with that many faces' },
+      { 'spec': [ 'roll', ':', ':int', ':int' ], 'func': self.roll, 'desc': '/roll <i>FACES REPEATS</i> - Roll a die many times' },
+    ]
+
+  def roll(self, cmd):
+    faces = 6
+    if len(cmd) > 1 and cmd[1] < 1:
+      raise Exception('Number of faces must be positive.')
+    if len(cmd) > 2 and cmd[2] < 1:
+      raise Exception('Number of repeats must be positive.')
+    if len(cmd) == 1:
+      # /roll
+      return '%s rolled a %s-sided die. Outcome = %s' % (self.sender, faces, random.randint(1, faces))
+    elif len(cmd) == 2:
+      # /roll FACES
+      faces = cmd[1]
+      return '%s rolled a %s-sided die. Outcome = %s' % (self.sender, faces, random.randint(1, faces))
+    elif len(cmd) == 3:
+      # /roll FACES REPEATS
+      faces = cmd[1]
+      times = cmd[2]
+      out = [ random.randint(1, faces) for i in xrange(0, times)]
+      return '%s rolled a %s-sided die %s time%s. Outcome = %s. Sum = %s' % (
+        self.sender, faces, times, 's' if times > 1 else '', out, sum(out)
+      )
