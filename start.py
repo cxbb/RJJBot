@@ -11,6 +11,7 @@ from modules.wordcheck import WordCheckModule
 from modules.kvdb import KVDBModule
 from modules.memo import MemoModule
 from modules.event import EventModule
+from modules.aqi import AqiModule
 from commands import Command, CommandParseException
 
 class RJJBot:
@@ -148,7 +149,7 @@ class RJJBot:
 
 if __name__ == '__main__':
     rjj = RJJBot()
-    rjj.modules = [BasicModule(), MemoModule(), DiceModule(), LunchModule(), FinanceModule(), WordCheckModule(), KVDBModule(), EventModule()]
+    rjj.modules = [BasicModule(), MemoModule(), DiceModule(), LunchModule(), FinanceModule(), WordCheckModule(), KVDBModule(), EventModule(), AqiModule()]
     if (len(sys.argv) > 1 and sys.argv[1] == "local"):
       rjj.start_local()
     else:
