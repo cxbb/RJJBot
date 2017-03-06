@@ -12,6 +12,9 @@ from modules.kvdb import KVDBModule
 from modules.memo import MemoModule
 from modules.event import EventModule
 from modules.aqi import AqiModule
+from modules.rss import RssModule
+from modules.hiking import HikingModule
+#from modules.github import GithubModule
 from commands import Command, CommandParseException
 
 class RJJBot:
@@ -67,7 +70,7 @@ class RJJBot:
     if isinstance(text, basestring):
       self.send_request('sendMessage', {'chat_id': chat_id, 'text': text.encode('utf-8'), 'disable_web_page_preview': True})
     elif text.get('type') == 'html':
-      self.send_request('sendMessage', {'chat_id': chat_id, 'text': text.get('content').encode('utf-8'), 'parse_mode': 'HTML', 'disable_web_page_preview': True})
+      self.send_request('sendMessage', {'chat_id': chat_id, 'text': text.get('content').encode('utf-8'), 'parse_mode': 'HTML', 'disable_web_page_preview': True if text.get('disable_preview') == None else text.get('disable_preview')})
     elif text.get('type') == 'sticker':
       self.send_request('sendSticker', { 'chat_id': chat_id, 'sticker': text.get('content', '') })
 
@@ -149,7 +152,7 @@ class RJJBot:
 
 if __name__ == '__main__':
     rjj = RJJBot()
-    rjj.modules = [BasicModule(), MemoModule(), DiceModule(), LunchModule(), FinanceModule(), WordCheckModule(), KVDBModule(), EventModule(), AqiModule()]
+    rjj.modules = [ AqiModule(), BasicModule(), MemoModule(), DiceModule(), LunchModule(), FinanceModule(), WordCheckModule(), KVDBModule(), EventModule(), RssModule(), HikingModule() ]
     if (len(sys.argv) > 1 and sys.argv[1] == "local"):
       rjj.start_local()
     else:
