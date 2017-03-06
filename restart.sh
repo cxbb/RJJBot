@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-pid=$(ps x | grep python | grep -v grep | awk '{print $1}')
+pid=$(ps x | grep 'python start.py' | grep -v grep | awk '{print $1}')
 if [[ ! -z $pid ]]; then
     kill $pid
 fi

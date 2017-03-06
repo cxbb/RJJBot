@@ -6,7 +6,7 @@ import random
 
 class AqiModule(BaseModule):
 
-  stations = [{"station":"東涌","id":2568},{"station":"屯門","id":3928},{"station":"塔門","id":2565},{"station":"元朗","id":2569},{"station":"大埔","id":2566},{"station":"沙田","id":2563},{"station":"觀塘","id":2562},{"station":"荃灣","id":2567},{"station":"葵涌","id":2561},{"station":"深水埗","id":2564},{"station":"東區","id":2560},{"station":"銅鑼灣","id":2570},{"station":"中環","id":2571},{"station":"中西區","id":2559},{"station":"旺角","id":2572 }]
+  stations = [{"station":"東涌","id":2568},{"station":"屯門","id":3928},{"station":"塔門","id":2565},{"station":"元朗","id":2569},{"station":"大埔","id":2566},{"station":"沙田","id":2563},{"station":"觀塘","id":2562},{"station":"荃灣","id":2567},{"station":"葵涌","id":2561},{"station":"深水埗","id":2564},{"station":"東區","id":2560},{"station":"銅鑼灣","id":2570},{"station":"中環","id":2571},{"station":"中西區","id":2559},{"station":"旺角","id":2572 }, {'station': '北京', 'id': 447}]
   QUOTE_URL = { 'aqi': 'http://api.waqi.info/feed/@%d/?token=%s' }
 
   def __init__(self):
@@ -53,25 +53,26 @@ class AqiModule(BaseModule):
       out, err = p.communicate()
       obj = json.loads(out)
       header = "%s at %s\n" % (obj['data']['city']['name'], obj['data']['time']['s'] )
-      so2 = u"二氧化硫: %d ug/m³\n" % obj['data']['iaqi']['so2']['v']
-      o3 = u"臭氧: %d ug/m³\n" % obj['data']['iaqi']['o3']['v']
-      if 'co' in obj['data']['iaqi']:
-        co = u"一氧化碳: %d ppm\n" % obj['data']['iaqi']['co']['v']
+      if 'url' in obj['data']['city']:
+        sources = obj['data']['city']['url']
       else:
-        co = ''
-      no2 = u"二氧化氮: %d ug/m³\n" % obj['data']['iaqi']['no2']['v']
-      pm25 = u"PM2.5: %d ug/m³\n" % obj['data']['iaqi']['pm25']['v']
-      pm10 = u"PM10: %d ug/m³\n" % obj['data']['iaqi']['pm10']['v']
-      temp = u"溫度: %d °C\n" % obj['data']['iaqi']['t']['v']
-      pressure = u"氣壓: %d hPa\n" % obj['data']['iaqi']['p']['v']
-      uvi = u"UVI: %d\n" % obj['data']['iaqi']['uvi']['v']
-      windspeed = u"風速: %d m/s\n" % obj['data']['iaqi']['uvi']['v']
-      humidity = u"濕度: %d%%\n" % obj['data']['iaqi']['h']['v']
-      drew = u"Dew: %d\n" % obj['data']['iaqi']['d']['v']
-      aqi = "AQI: %d\n" % obj['data']['aqi']
-      comment = u"Level: %s\n\n" % self.get_pollution_level(obj['data']['aqi'])
-      sources = "http://aqicn.org/"
-      return header + temp + humidity + uvi + so2 + o3 + co + no2 + pm25 + pm10 + aqi + comment + sources
+        sources = 'http://aqicn.org'
+      iaqi = obj['data']['iaqi']
+      so2 = u"二氧化硫: %d ug/m³\n" % iaqi['so2']['v'] if 'so2' in iaqi else ''
+      o3 = u"臭氧: %d ug/m³\n" % iaqi['o3']['v'] if 'o3' in iaqi else ''
+      co = u"一氧化碳: %d ppm\n" % iaqi['co']['v'] if 'co' in iaqi else ''
+      no2 = u"二氧化氮: %d ug/m³\n" % iaqi['no2']['v'] if 'no2' in iaqi else ''
+      pm25 = u"PM2.5: %d ug/m³\n" % iaqi['pm25']['v'] if 'pm25' in iaqi else ''
+      pm10 = u"PM10: %d ug/m³\n" % iaqi['pm10']['v'] if 'pm10' in iaqi else ''
+      temp = u"溫度: %d °C\n" % iaqi['t']['v'] if 't' in iaqi else ''
+      pressure = u"氣壓: %d hPa\n" % iaqi['p']['v'] if 'p' in iaqi else ''
+      uvi = u"UVI: %d\n" % iaqi['uvi']['v'] if 'uvi' in iaqi else ''
+      windspeed = u"風速: %d m/s\n" % iaqi['w']['v'] if 'w' in iaqi else ''
+      humidity = u"濕度: %d%%\n" % iaqi['h']['v'] if 'h' in iaqi else ''
+      dew = u"Dew: %d\n" % iaqi['d']['v'] if 'd' in iaqi else ''
+      comment = u"%s" % self.get_pollution_level(obj['data']['aqi'])
+      aqi = "AQI: %d (%s)\n" % (obj['data']['aqi'], comment)
+      return header + temp + humidity + uvi + so2 + o3 + co + no2 + pm25 + pm10 + aqi + sources
     except Exception, e:
       raise Exception('Enjoy. Error: %s %s' % (str(e), out))
   
