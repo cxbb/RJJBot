@@ -6,7 +6,7 @@ import random
 
 class AqiModule(BaseModule):
 
-  stations = [{"station":"東涌","id":2568},{"station":"屯門","id":3928},{"station":"塔門","id":2565},{"station":"元朗","id":2569},{"station":"大埔","id":2566},{"station":"沙田","id":2563},{"station":"觀塘","id":2562},{"station":"荃灣","id":2567},{"station":"葵涌","id":2561},{"station":"深水埗","id":2564},{"station":"東區","id":2560},{"station":"銅鑼灣","id":2570},{"station":"中環","id":2571},{"station":"中西區","id":2559},{"station":"旺角","id":2572 }, {'station': '北京', 'id': 447}]
+  stations = [{"station":"東涌","id":2568},{"station":"屯門","id":3928},{"station":"塔門","id":2565},{"station":"元朗","id":2569},{"station":"大埔","id":2566},{"station":"沙田","id":2563},{"station":"觀塘","id":2562},{"station":"荃灣","id":2567},{"station":"葵涌","id":2561},{"station":"深水埗","id":2564},{"station":"東區","id":2560},{"station":"銅鑼灣","id":2570},{"station":"中環","id":2571},{"station":"中西區","id":2559},{"station":"旺角","id":2572 }, {'station': '北京', 'id': 447}, {"station": "Horseshoe Bay", 'id': 4224}, {'station': 'North Vancouver Second Narrows', "id": 4227}, {"station": "Burnaby North Eton", "id": 4220}, {"station": "Port Moody Rocky Point Park", "id": 4229}, {"station": "Pitt Meadow Meadowlands School", "id": 4228}, {"station": "Burnaby South", "id": 4221}, {"station": "North Delta", "id": 4226}, {"station": "Surrey East", "id": 4231}, {"station": "Richmond South", "id": 4232}, {"station": "Vancouver International Airport #2", "id": 10133}]
   QUOTE_URL = { 'aqi': 'http://api.waqi.info/feed/@%d/?token=%s' }
 
   def __init__(self):
